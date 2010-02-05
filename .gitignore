@@ -1,0 +1,10 @@
+.svn
+bin
+obj
+*.suo
+*.pdb
+*.user
+*_ReSharper*
+Bin
+*.log
+/trunk/SQL/Create Scripts/AspMemberhsipDataBase/log.txt
