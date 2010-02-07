@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Lattyf.BackIt.Core.Configuration;
 using Lattyf.BackIt.Core.Info;
 using log4net;
@@ -40,9 +42,83 @@ namespace Lattyf.BackIt.Core.Scanner
         /// <returns>List of new or modified files.</returns>
         public IList<ObjectInfo> Scan()
         {
-            throw new NotImplementedException();
+            var totalFiles = new List<ObjectInfo>();
+
+            _log.InfoFormat("Starting scanning process...");
+
+            foreach (DirectoryConfiguration directory in _configuration.Directories)
+            {
+                var dirInfo = new DirectoryInfo(directory.Directory);
+
+                if (!dirInfo.Exists)
+                {
+                    _log.InfoFormat("Directory \"{0}\" does not exists.", directory.Directory);
+                    continue;
+                }
+
+                _log.InfoFormat("Scanning root directory \"{0}\"...", dirInfo.FullName);
+
+                // Scan folders recursive.
+                IEnumerable<ObjectInfo> objects = ScanFolder(dirInfo);
+
+                totalFiles.AddRange(objects);
+            }
+
+            _log.InfoFormat("Found total files: {0}.", totalFiles.Count);
+
+            return totalFiles;
         }
 
         #endregion
+
+        /// <summary>
+        /// Scans folder recursive.
+        /// </summary>
+        /// <param name="dirInfo">Directory for scanning.</param>
+        /// <returns>Objects in directory.</returns>
+        private static IEnumerable<ObjectInfo> ScanFolder(DirectoryInfo dirInfo)
+        {
+            _log.DebugFormat("Scanning folder \"{0}\"", dirInfo.FullName);
+
+            var result = new List<ObjectInfo>();
+
+            try
+            {
+                // Get files in folder.
+                IEnumerable<ObjectInfo> objects = from file in dirInfo.GetFiles()
+                                                  select
+                                                      new ObjectInfo
+                                                          {
+                                                              FullPath = file.FullName,
+                                                              ControlSum = null,
+                                                              LastWriteTime = file.LastAccessTimeUtc
+                                                          };
+
+                result.AddRange(objects);
+            }
+            catch (Exception ex)
+            {
+                _log.WarnFormat("Exception while scanning directory \"{0}\": {1}", dirInfo, ex);
+            }
+
+            try
+            {
+                // Get all folders. Recurse
+                DirectoryInfo[] nestedDirs = dirInfo.GetDirectories();
+
+                foreach (DirectoryInfo directoryInfo in nestedDirs)
+                {
+                    IEnumerable<ObjectInfo> nestedObjects = ScanFolder(directoryInfo);
+
+                    result.AddRange(nestedObjects);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.WarnFormat("Exception while scanning directory \"{0}\": {1}", dirInfo, ex);
+            }
+
+            return result;
+        }
     }
 }
