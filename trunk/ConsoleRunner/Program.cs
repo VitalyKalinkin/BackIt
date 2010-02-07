@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using Lattyf.BackIt.Core.Configuration;
+using Lattyf.BackIt.Core.Scanner;
 using log4net;
 
 namespace Lattyf.BackIt.ConsoleRunner
@@ -40,7 +41,9 @@ namespace Lattyf.BackIt.ConsoleRunner
                 return;
             }
 
-                      
+            var scanner = new FileSystemScanner();
+            scanner.Initialize(config);
+            scanner.Scan();
 
             _log.InfoFormat("Done!");
         }
