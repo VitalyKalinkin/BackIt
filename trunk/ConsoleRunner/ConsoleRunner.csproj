@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4E845818-76A2-4A67-849F-F06EC7ABE9E3}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{08D634F9-0616-40B2-B66C-D60837A591F3}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lattyf.BackIt.Core</RootNamespace>
-    <AssemblyName>Lattyf.BackIt.Core</AssemblyName>
+    <RootNamespace>Lattyf.BackIt.ConsoleRunner</RootNamespace>
+    <AssemblyName>Lattyf.BackIt.ConsoleRunner</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\Lattyf.BackIt.Core.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Lattyf.BackIt.ConsoleRunner.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,9 +32,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\Lattyf.BackIt.Core.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Lattyf.BackIt.ConsoleRunner.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Library\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -50,18 +54,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\CoreConfiguration.cs" />
-    <Compile Include="Configuration\DirectoriesListConfiguration.cs" />
-    <Compile Include="Configuration\DirectoryConfiguration.cs" />
-    <Compile Include="Configuration\ICoreConfiguration.cs" />
-    <Compile Include="Info\ObjectInfo.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scanner\IScanner.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="LocalStorage\LocalStorage.sdf">
+    <None Include="App.config" />
+    <Content Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{4E845818-76A2-4A67-849F-F06EC7ABE9E3}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
