@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using Lattyf.BackIt.Core.Common;
 using Lattyf.BackIt.Core.Configuration;
+using Lattyf.BackIt.Core.LocalStorage;
 using Lattyf.BackIt.Core.Scanner;
 using log4net;
 
@@ -40,6 +42,9 @@ namespace Lattyf.BackIt.ConsoleRunner
                 _log.FatalFormat("Can't read configuration file.");
                 return;
             }
+
+            var storage = LocalStorage.Instance;
+            CommonUtil.UseIt(storage);
 
             var scanner = new FileSystemScanner();
             scanner.Initialize(config);

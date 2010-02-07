@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Lattyf.BackIt.Core.Configuration;
 using Lattyf.BackIt.Core.Info;
 using log4net;
@@ -15,6 +16,7 @@ namespace Lattyf.BackIt.Core.Scanner
     {
         private static readonly ILog _log = LogManager.GetLogger(typeof (FileSystemScanner));
 
+        private readonly SHA1CryptoServiceProvider _provider = new SHA1CryptoServiceProvider();
         private ICoreConfiguration _configuration;
 
         #region IScanner Members
@@ -66,10 +68,86 @@ namespace Lattyf.BackIt.Core.Scanner
 
             _log.InfoFormat("Found total files: {0}.", totalFiles.Count);
 
-            return totalFiles;
+            // Checking file modification status.
+            IList<ObjectInfo> modifiedFiles = CheckFilesModificationStatus(totalFiles);
+
+            _log.InfoFormat("Found {0} modified files", modifiedFiles.Count);
+
+            return modifiedFiles;
         }
 
         #endregion
+
+        /// <summary>
+        /// Checks files modification status by database.
+        /// </summary>
+        /// <param name="totalFiles">Total list of files for checking.</param>
+        /// <returns>Only modified files.</returns>
+        private IList<ObjectInfo> CheckFilesModificationStatus(IEnumerable<ObjectInfo> totalFiles)
+        {
+            IEnumerable<ObjectInfo> modified = from objectInfo in totalFiles
+                                               let checkingResult = CheckFile(objectInfo)
+                                               where checkingResult
+                                               select objectInfo;
+
+            _log.InfoFormat("Evaluating files control sum.");
+
+            IEnumerable<ObjectInfo> result = from objectInfo in modified
+                                             let controlSum = EvaluateHash(objectInfo)
+                                             select
+                                                 new ObjectInfo
+                                                     {
+                                                         FullPath = objectInfo.FullPath,
+                                                         LastWriteTime = objectInfo.LastWriteTime,
+                                                         ControlSum = controlSum
+                                                     };
+
+            return result.ToList();
+        }
+
+        /// <summary>
+        /// Check file modification status.
+        /// </summary>
+        /// <param name="objectInfo">Info of file for checking modification.</param>
+        /// <returns>True, if file modified.</returns>
+        private bool CheckFile(ObjectInfo objectInfo)
+        {
+            try
+            {
+                _log.DebugFormat("Checking file \"{0}\".", objectInfo.FullPath);
+
+                bool isFileModifiedByDate = LocalStorage.LocalStorage.Instance.IsFileModified(objectInfo);
+
+                if (!isFileModifiedByDate)
+                    return false;
+
+                // Evaluate control sum.
+                byte[] controlSum = EvaluateHash(objectInfo);
+
+                bool isFileModifiedByContent = LocalStorage.LocalStorage.Instance.IsFileModifiedByContent(objectInfo,
+                                                                                                          controlSum);
+
+                return isFileModifiedByContent;
+            }
+            catch (Exception ex)
+            {
+                _log.WarnFormat("Exception while checking file modification status \"{0}\": {1}", objectInfo.FullPath,
+                                ex);
+                return false;
+            }
+        }
+
+        private byte[] EvaluateHash(ObjectInfo objectInfo)
+        {
+            using (
+                Stream inputStream = new FileStream(objectInfo.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read)
+                )
+            {
+                byte[] hash = _provider.ComputeHash(inputStream);
+                return hash;
+            }
+        }
+
 
         /// <summary>
         /// Scans folder recursive.
