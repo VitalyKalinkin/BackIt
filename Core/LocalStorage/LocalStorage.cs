@@ -1,7 +1,6 @@
 using System;
 using System.Configuration;
 using System.Data;
-using System.Data.SqlServerCe;
 using Lattyf.BackIt.Core.Common;
 using Lattyf.BackIt.Core.Info;
 using log4net;
