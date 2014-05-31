@@ -172,3 +172,13 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+=======
+.svn
+bin
+obj
+*.suo
+*.pdb
+*.user
+*_ReSharper*
+Bin
+*.log
